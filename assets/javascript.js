@@ -16,9 +16,12 @@ var config = {
     storageBucket: "my-awesome-project-f9c50.appspot.com",
     messagingSenderId: "138051668610"
   };
+
   firebase.initializeApp(config);
   
   var database = firebase.database();
+
+  console.log(database);
   
   // Button for adding Train Times
   $("#add-train-btn").on("click", function(event) {
@@ -27,22 +30,36 @@ var config = {
     // Grabs user input
     var trainName = $("#train-name-input").val().trim();
     var trainDest = $("#destination-input").val().trim();
-    var firstTrain = moment($("#first-train-input").val().trim(), "HH:mm").subtract(1, "years");
-    var trainFreq = $("#frequency-input").val().trim();
-    var diffTime = moment().diff(moment(firstTrain), "minutes");
+    var firstTrainMoment = moment($("#first-train-input").val(), "HH:mm");
+    var firstTrain = firstTrainMoment._i;
+    var trainFreq = parseInt($("#frequency-input").val().trim());
+    var diffTime = moment().diff(moment(firstTrainMoment), "minutes");
     var tRemainder = diffTime % trainFreq;
     var tMinutesTillTrain = trainFreq - tRemainder;
-    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+    var nextTrainMoment = moment().add(tMinutesTillTrain, "minutes");
+    var nextTrain = moment(nextTrainMoment).format("HH:mm");
+
+
+    console.log(trainName);
+    console.log(trainDest);
+    console.log(firstTrain);
+    console.log(trainFreq);
+    console.log(diffTime);
+    console.log(tRemainder);
+    console.log(tMinutesTillTrain);
+    console.log(nextTrain);
 
   
     // Creates local "temporary" object for holding train data
     var newTrain = {
       name: trainName,
       destination: trainDest,
-      start: firstTrain,
       rate: trainFreq,
-      next: nextTrain
+      next: nextTrain,
+      min: tMinutesTillTrain
     };
+
+    console.log(newTrain);
   
     // Uploads employee data to the database
     database.ref().push(newTrain);
@@ -50,9 +67,9 @@ var config = {
     // Logs everything to console
     console.log(newTrain.name);
     console.log(newTrain.destination);
-    console.log(newTrain.start);
     console.log(newTrain.rate);
     console.log(newTrain.next);
+    console.log(newTrain.min);
   
     alert("Train Schedule Successfully Added...choo choo!");
   
@@ -70,25 +87,24 @@ var config = {
     // Store everything into a variable.
     var trainName = childSnapshot.val().name;
     var trainDest = childSnapshot.val().destination;
-    var firstTrain = childSnapshot.val().start;
     var trainFreq = childSnapshot.val().rate;
     var nextTrain = childSnapshot.val().next;
+    var tMinutesTillTrain = childSnapshot.val().min;
   
     // Train Info
     console.log(trainName);
     console.log(trainDest);
-    console.log(firstTrain);
     console.log(trainFreq);
     console.log(nextTrain);
+    console.log(tMinutesTillTrain);
   
     // Create the new row
     var newRow = $("<tr>").append(
-      $("<td>").text(trainName),
-      $("<td>").text(trainDest),
-      $("<td>").text(firstTrain),
-      $("<td>").text(trainFreq),
-      $("<td>").text(nextTrain),
-
+      $("<th scope='row'>").text(trainName),
+      $("<th>").text(trainDest),
+      $("<th>").text(trainFreq),
+      $("<th>").text(nextTrain),
+      $("<th>").text(tMinutesTillTrain),
     );
   
     // Append the new row to the table
